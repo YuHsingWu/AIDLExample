@@ -11,23 +11,22 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
 
+import java.util.List;
+
 /**
  * Created by mac on 2017/11/30.
  */
 
 public class CompassService extends Service implements SensorEventListener {
 
-    // ICallback列表
     private RemoteCallbackList<ICompassCallback> mCallbacks;
     private SensorManager mSensorManager;
+
     private float mOrientation = 0f;
-
-
-    public CompassService() {
-    }
 
     @Override
     public IBinder onBind(Intent intent) {
+        mCallbacks = new RemoteCallbackList<ICompassCallback>();
         return mBinder;
     }
 
@@ -60,11 +59,19 @@ public class CompassService extends Service implements SensorEventListener {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.i("CompassService", "onCreate");
+        mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+        List sensors = mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
+        if (sensors.size()>0) {
+            mSensorManager.registerListener(this, (Sensor) sensors.get(0), SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Log.i("CompassService", "onDestroy");
+        mSensorManager.unregisterListener(this);
     }
 
     private void sendResponse() {
@@ -76,28 +83,17 @@ public class CompassService extends Service implements SensorEventListener {
                 e.printStackTrace();
             }
         }
-        // 记得要关闭广播
+
         mCallbacks.finishBroadcast();
     }
 
     @Override
-    public void onSensorChanged(SensorEvent sensorEvent) {
-        float[] accelerometerValues = new float[3];
-        float[] magneticFieldValues = new float[3];
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
-            magneticFieldValues = sensorEvent.values;
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
-            accelerometerValues = sensorEvent.values;
+    public void onSensorChanged(SensorEvent event) {
 
-        float[] values = new float[3];
-        float[] R = new float[9];
-        SensorManager.getRotationMatrix(R, null, accelerometerValues, magneticFieldValues);
-        SensorManager.getOrientation(R, values);
-
-        mOrientation = values[0];
-        // 要经过一次数据格式的转换，转换为度
-//        values[0] = (float) Math.toDegrees(values[0]);
-        Log.i("CompassService", "Orientation = " + values[0]);
+        // angle between the magnetic north direction
+        // 0=North, 90=East, 180=South, 270=West
+        mOrientation = event.values[0];
+        Log.i("CompassService", "Orientation = " + mOrientation);
         sendResponse();
     }
 

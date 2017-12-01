@@ -4,20 +4,36 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     ICompassService mService;
+    protected ICompassCallback callback = new ICompassCallback.Stub() {
+        @Override
+        public void onResult(float result) {
+            Log.i("MainActivity", "onResult :" + result);
+        }
+    };
+
+
     private final ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             mService = ICompassService.Stub.asInterface(service);
+            // mService为AIDL服务
+            try {
+                mService.registerCallback(callback);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+
             Toast.makeText(MainActivity.this, "onServiceConnected", Toast.LENGTH_SHORT).show();
         }
 
@@ -47,11 +63,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_bind:
                 Intent intent = new Intent();
                 intent.setPackage("com.hitachi.example.aidl");
-                intent.setAction("com.hitachi.example.aidl.ICompassService");
+                intent.setAction("com.hitachi.example.aidl.CompassService");
                 bindService(intent, conn, Context.BIND_AUTO_CREATE);
                 break;
             case R.id.btn_unbind:
-                unbindService(conn);
+                if(mService != null) {
+                    unbindService(conn);
+                }
                 break;
             case R.id.btn_call:
                 if (null != mService) {
