@@ -1,6 +1,6 @@
 # AIDL Example
 
-Self test for using AIDL.
+Example for using AIDL Service Callback.
 
 Add SensorManager to return the Orientation value.
 
