@@ -20,11 +20,11 @@
         </activity>
 
         <service
-            android:name=".CompassService"
+            android:name=".LocationService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.hitachi.example.aidl.CompassService" />
+                <action android:name="com.hitachi.example.aidl.LocationService" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>

@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_bind:
                 Intent intent = new Intent();
                 intent.setPackage("com.hitachi.example.aidl");
-                intent.setAction("com.hitachi.example.aidl.CompassService");
+                intent.setAction("com.hitachi.example.aidl.LocationService");
                 bindService(intent, conn, Context.BIND_AUTO_CREATE);
                 break;
             case R.id.btn_unbind:
