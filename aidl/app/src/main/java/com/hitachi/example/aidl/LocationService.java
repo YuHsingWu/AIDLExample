@@ -33,6 +33,7 @@ public class LocationService extends Service implements SensorEventListener {
     JSONObject jsonObject = new JSONObject();
 
     private float mOrientation = 0f;
+    private static final Region ALL_BEACONS_REGION = new Region("Beacon_SLAM", null, null, null);
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -80,8 +81,21 @@ public class LocationService extends Service implements SensorEventListener {
 
         // Initial April BeaconManager to listen Beacon information
         mBeaconManager = new BeaconManager(getApplicationContext());
+        mBeaconManager.setForegroundScanPeriod(1000,1000);
         mBeaconManager.setRangingListener(BeaconRangingListener);
         mBeaconManager.setMonitoringListener(BeaconMonitorListener);
+        mBeaconManager.connect(new BeaconManager.ServiceReadyCallback() {
+            @Override
+            public void onServiceReady() {
+                try {
+                    Log.i(TAG, "connectToService");
+                    mBeaconManager.startRanging(ALL_BEACONS_REGION);
+                    mBeaconManager.startMonitoring(ALL_BEACONS_REGION);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
 
 
         try {
@@ -123,8 +137,8 @@ public class LocationService extends Service implements SensorEventListener {
         // angle between the magnetic north direction
         // 0=North, 90=East, 180=South, 270=West
         mOrientation = event.values[0];
-        Log.i("LocationService", "Orientation = " + mOrientation);
-        sendResponse();
+//        Log.i("LocationService", "Orientation = " + mOrientation);
+//        sendResponse();
     }
 
     @Override
@@ -137,14 +151,14 @@ public class LocationService extends Service implements SensorEventListener {
         public void onBeaconsDiscovered(Region region, List<Beacon> beacons) {
             Log.i(TAG, "onBeaconsDiscovered: ");
             for (Beacon beacon : beacons) {
-                if (beacon.getRssi() > 0) {
-                    Log.i(TAG, "UUID = " + beacon.getProximityUUID());
-                    Log.i(TAG, "Major = " + beacon.getMajor());
-                    Log.i(TAG, "Minor = " + beacon.getMinor());
-                    Log.i(TAG, "rssi = " + beacon.getRssi());
-                    Log.i(TAG, "mac = " + beacon.getMacAddress());
-                    Log.i(TAG, "distance = " + beacon.getDistance());
-                }
+//                if (beacon.getRssi() > 0) {
+//                    Log.i(TAG, "UUID = " + beacon.getProximityUUID());
+//                    Log.i(TAG, "Major = " + beacon.getMajor());
+//                    Log.i(TAG, "Minor = " + beacon.getMinor());
+//                    Log.i(TAG, "rssi = " + beacon.getRssi());
+//                    Log.i(TAG, "mac = " + beacon.getMacAddress());
+                    Log.i(TAG, "Minor - distance = " + beacon.getMinor() + ", " + beacon.getDistance());
+//                }
             }
         }
     };

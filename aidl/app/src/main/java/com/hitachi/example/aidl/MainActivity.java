@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btn_unbind:
                 if(mService != null) {
                     unbindService(conn);
+                    mService = null;
                 }
                 break;
             case R.id.btn_call:
