@@ -23,11 +23,33 @@
         </activity>
 
         <service
-            android:name=".LocationService"
+            android:name=".AprilLocationService"
             android:enabled="true"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.hitachi.example.aidl.LocationService" />
+                <action android:name="com.hitachi.example.aidl.AprilLocationService" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".AltLocationService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.hitachi.example.aidl.AltLocationService" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".THLightLocationService"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.hitachi.example.aidl.THLightLocationService" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
@@ -35,6 +57,24 @@
         <service
             android:name="com.aprilbrother.aprilbrothersdk.service.BeaconService"
             android:exported="false" />
+
+        <receiver android:name="org.altbeacon.beacon.startup.StartupBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="org.altbeacon.beacon.service.BeaconService"
+            android:enabled="true"
+            android:exported="false"
+            android:isolatedProcess="false"
+            android:label="beacon" />
+        <service
+            android:name="org.altbeacon.beacon.BeaconIntentProcessor"
+            android:enabled="true" />
     </application>
 
 </manifest>

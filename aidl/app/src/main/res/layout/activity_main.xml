@@ -7,20 +7,15 @@
     tools:context="com.hitachi.example.aidl.MainActivity">
 
     <Button
-        android:id="@+id/btn_bind"
+        android:id="@+id/btn_bind_alt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Bind service" />
+        android:text="Bind Alt service" />
 
     <Button
-        android:id="@+id/btn_unbind"
+        android:id="@+id/btn_bind_april"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Unbind service"/>
+        android:text="Bind April service"/>
 
-    <Button
-        android:id="@+id/btn_call"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="RPC"/>
 </LinearLayout>

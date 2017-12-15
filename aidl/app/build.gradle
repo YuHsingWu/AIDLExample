@@ -28,4 +28,6 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     testCompile 'junit:junit:4.12'
     compile files('libs/ab-sdk-beta1.7.3.jar')
+    compile 'org.altbeacon:android-beacon-library:2.12.3'
+    implementation files('libs/libusbeaconapp.jar')
 }

@@ -8,5 +8,5 @@ interface ICompassCallback {
      * Demonstrates some basic types that you can use as parameters
      * and return values in AIDL.
      */
-    void onResult(in float result);
+    void onResult(in String result);
 }

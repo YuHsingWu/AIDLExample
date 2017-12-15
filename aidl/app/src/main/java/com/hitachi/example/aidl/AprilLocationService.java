@@ -14,7 +14,9 @@ import android.util.Log;
 import com.aprilbrother.aprilbrothersdk.Beacon;
 import com.aprilbrother.aprilbrothersdk.BeaconManager;
 import com.aprilbrother.aprilbrothersdk.Region;
+import com.aprilbrother.aprilbrothersdk.utils.AprilL;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,13 +26,12 @@ import java.util.List;
  * Created by mac on 2017/11/30.
  */
 
-public class LocationService extends Service implements SensorEventListener {
+public class AprilLocationService extends Service implements SensorEventListener {
 
-    private final String TAG = "LocationService";
+    private final String TAG = "AprilLocationService";
     private RemoteCallbackList<ICompassCallback> mCallbacks;
     private SensorManager mSensorManager;
     private BeaconManager mBeaconManager;
-    JSONObject jsonObject = new JSONObject();
 
     private float mOrientation = 0f;
     private static final Region ALL_BEACONS_REGION = new Region("Beacon_SLAM", null, null, null);
@@ -71,7 +72,7 @@ public class LocationService extends Service implements SensorEventListener {
     public void onCreate() {
         super.onCreate();
         Log.i("LocationService", "onCreate");
-
+        AprilL.enableDebugLogging(true);
         // Initial SersorManager to listen device orientation
         mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
         List sensors = mSensorManager.getSensorList(Sensor.TYPE_ORIENTATION);
@@ -96,33 +97,21 @@ public class LocationService extends Service implements SensorEventListener {
                 }
             }
         });
-
-
-        try {
-            jsonObject.put("UUID", "saldjlajdoahjfoisdoif");
-            jsonObject.put("Major", "0");
-            jsonObject.put("Minor", "0");
-            jsonObject.put("distance", 1.1f);
-            jsonObject.put("x", 2.2f);
-            jsonObject.put("y", 3.3f);
-            jsonObject.put("orientation", 0.0f);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.i("LocationService", "onDestroy");
+        mBeaconManager.disconnect();
         mSensorManager.unregisterListener(this);
     }
 
-    private void sendResponse() {
+    private void sendResponse(String json) {
         int len = mCallbacks.beginBroadcast();
         for (int i = 0; i < len; i++) {
             try {
-                mCallbacks.getBroadcastItem(i).onResult(mOrientation);
+                mCallbacks.getBroadcastItem(i).onResult(json);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -133,12 +122,9 @@ public class LocationService extends Service implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-
         // angle between the magnetic north direction
         // 0=North, 90=East, 180=South, 270=West
         mOrientation = event.values[0];
-//        Log.i("LocationService", "Orientation = " + mOrientation);
-//        sendResponse();
     }
 
     @Override
@@ -150,16 +136,25 @@ public class LocationService extends Service implements SensorEventListener {
         @Override
         public void onBeaconsDiscovered(Region region, List<Beacon> beacons) {
             Log.i(TAG, "onBeaconsDiscovered: ");
+            JSONArray jsonArray = new JSONArray();
             for (Beacon beacon : beacons) {
-//                if (beacon.getRssi() > 0) {
-//                    Log.i(TAG, "UUID = " + beacon.getProximityUUID());
-//                    Log.i(TAG, "Major = " + beacon.getMajor());
-//                    Log.i(TAG, "Minor = " + beacon.getMinor());
-//                    Log.i(TAG, "rssi = " + beacon.getRssi());
-//                    Log.i(TAG, "mac = " + beacon.getMacAddress());
-                    Log.i(TAG, "Minor - distance = " + beacon.getMinor() + ", " + beacon.getDistance());
-//                }
+                try {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put("mode", "april");
+                    jsonObject.put("uuid", beacon.getProximityUUID());
+                    jsonObject.put("major", beacon.getMajor());
+                    jsonObject.put("minor", beacon.getMinor());
+                    jsonObject.put("rssi", beacon.getRssi());
+                    jsonObject.put("power", beacon.getMeasuredPower());
+                    jsonObject.put("distance", beacon.getDistance());
+                    jsonObject.put("orientation", mOrientation);
+                    jsonArray.put(jsonObject);
+                    Log.i(TAG, "jsonObject = " + jsonObject.toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
+            sendResponse(jsonArray.toString());
         }
     };
 

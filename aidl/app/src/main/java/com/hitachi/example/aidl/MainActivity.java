@@ -14,22 +14,23 @@ import android.widget.Button;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    ICompassService mService;
+    ICompassService mAltService;
+    ICompassService mAlprilService;
     protected ICompassCallback callback = new ICompassCallback.Stub() {
         @Override
-        public void onResult(float result) {
-            Log.i("MainActivity", "onResult :" + result);
+        public void onResult(String jsonResult) {
+            Log.i("MainActivity", "onResult :" + jsonResult);
         }
     };
 
 
-    private final ServiceConnection conn = new ServiceConnection() {
+    private final ServiceConnection mAltConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            mService = ICompassService.Stub.asInterface(service);
+            mAltService = ICompassService.Stub.asInterface(service);
             // mService为AIDL服务
             try {
-                mService.registerCallback(callback);
+                mAltService.registerCallback(callback);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -39,7 +40,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            mService = null;
+            mAltService = null;
+            Toast.makeText(MainActivity.this, "onServiceDisconnected", Toast.LENGTH_SHORT).show();
+        }
+    };
+
+    private final ServiceConnection mAprilConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            mAlprilService = ICompassService.Stub.asInterface(service);
+            // mService为AIDL服务
+            try {
+                mAlprilService.registerCallback(callback);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+
+            Toast.makeText(MainActivity.this, "onServiceConnected", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            mAlprilService = null;
             Toast.makeText(MainActivity.this, "onServiceDisconnected", Toast.LENGTH_SHORT).show();
         }
     };
@@ -49,36 +71,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button btnBind = (Button) findViewById(R.id.btn_bind);
-        Button btnUnbind = (Button) findViewById(R.id.btn_unbind);
-        Button btnCall = (Button) findViewById(R.id.btn_call);
+        Button btnBind = (Button) findViewById(R.id.btn_bind_alt);
+        Button btnUnbind = (Button) findViewById(R.id.btn_bind_april);
+
         btnBind.setOnClickListener(this);
         btnUnbind.setOnClickListener(this);
-        btnCall.setOnClickListener(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mAltService != null) {
+            unbindService(mAltConnection);
+            mAltService = null;
+        }
+        if(mAlprilService != null) {
+            unbindService(mAprilConnection);
+            mAlprilService = null;
+        }
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.btn_bind:
-                Intent intent = new Intent();
-                intent.setPackage("com.hitachi.example.aidl");
-                intent.setAction("com.hitachi.example.aidl.LocationService");
-                bindService(intent, conn, Context.BIND_AUTO_CREATE);
-                break;
-            case R.id.btn_unbind:
-                if(mService != null) {
-                    unbindService(conn);
-                    mService = null;
+            case R.id.btn_bind_alt:
+                if(mAltService == null) {
+                    Intent intent = new Intent();
+                    intent.setPackage("com.hitachi.example.aidl");
+                    intent.setAction("com.hitachi.example.aidl.THLightLocationService");
+                    bindService(intent, mAltConnection, Context.BIND_AUTO_CREATE);
+                } else {
+                    unbindService(mAltConnection);
+                    mAltService = null;
                 }
                 break;
-            case R.id.btn_call:
-                if (null != mService) {
-                    try {
-                        Toast.makeText(MainActivity.this, "Compass" + mService.getCompass(), Toast.LENGTH_SHORT).show();
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
+            case R.id.btn_bind_april:
+                if(mAlprilService == null) {
+                    Intent intent = new Intent();
+                    intent.setPackage("com.hitachi.example.aidl");
+                    intent.setAction("com.hitachi.example.aidl.AprilLocationService");
+                    bindService(intent, mAprilConnection, Context.BIND_AUTO_CREATE);
+                } else {
+                    unbindService(mAprilConnection);
+                    mAlprilService = null;
                 }
                 break;
         }
