@@ -71,11 +71,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button btnBind = (Button) findViewById(R.id.btn_bind_alt);
-        Button btnUnbind = (Button) findViewById(R.id.btn_bind_april);
+        Button btnAlt = (Button) findViewById(R.id.btn_bind_alt);
+        Button btnApril = (Button) findViewById(R.id.btn_bind_april);
 
-        btnBind.setOnClickListener(this);
-        btnUnbind.setOnClickListener(this);
+        btnAlt.setOnClickListener(this);
+        btnApril.setOnClickListener(this);
     }
 
     @Override
