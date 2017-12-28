@@ -1,6 +1,6 @@
-# AIDL Example
+# iBeacon Scanner Example
 
-Example for using AIDL Service Callback.
+Using AIDL Service Callback to update iBeacon informaiton
 
 Functions:
 
